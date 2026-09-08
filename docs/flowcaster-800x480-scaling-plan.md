@@ -1,8 +1,13 @@
 # FlowCaster — piano di scaling 480×272 → 800×480
 
 Documento di lavoro. Vive nel repo (non in chat) così non si perde.
-Target: portare FlowCaster v1.1 da 480×272 a 800×480, con risultato
+Target: portare FlowCaster da 480×272 a 800×480, con risultato
 pixel-perfect utilizzabile da firmware in C.
+
+**File di design:** Project FlowCaster — Design v 1.2
+<https://www.figma.com/design/FgxDMboNXUKXzwAa0k1S4T/Project-FlowCaster---Design-v-1.2?node-id=49-297>
+- file key: `FgxDMboNXUKXzwAa0k1S4T`
+- nodo di riferimento: `49:297`
 
 ---
 
@@ -193,3 +198,35 @@ set fa ~70% del lavoro. Se sono hardcoded, Tokens Studio non tocca nulla
    degli asset
 3. **Come intervenire su Figma**: plugin one-off scritto ad hoc /
    MCP read-only per l'audit / export SVG lavorati in locale
+
+---
+
+## 9. Accesso al file — stato (verificato)
+
+In sessione Claude Code **web/remota** il file di design non è
+raggiungibile. Due muri indipendenti:
+
+1. `figma.com` e `api.figma.com` sono **bloccati dalla network policy**
+   dell'ambiente remoto (`EGRESS_BLOCKED`, 403 sul tunnel CONNECT).
+2. Nessun connettore Figma esiste sull'account, e nessun token Figma è
+   configurato nell'ambiente.
+
+Nota: sbloccare solo `figma.com` non basta — un file di design non è
+leggibile come HTML, è un'app JS dietro autenticazione.
+
+### Opzioni per dare accesso in lettura
+
+| | Cosa serve | Cosa ottengo |
+|---|---|---|
+| **A. REST API Figma** | `api.figma.com` in allowlist + PAT come env var (`file_read`, `variables:read`) | Albero completo del documento: frame, dimensioni, auto-layout, variabili collegate, componenti/varianti → **audit vero** |
+| **B. Claude Code in locale** | Girare in locale invece che web | Nessun blocco di rete + Figma Dev Mode MCP contro l'app desktop |
+| **C. Screenshot** | Niente | Sblocco immediato, precisione minore |
+
+Il token va messo come **variabile d'ambiente**, non incollato in chat.
+In ogni caso resta **sola lettura**: per *scrivere* nel file serve un
+plugin (§6).
+
+### Screenshot minimi utili (opzione C)
+- 3–4 schermi rappresentativi
+- **pannello destro di Figma con un elemento selezionato** ← il dato che
+  conta: dice se padding/corner radius sono token o numeri hardcoded
